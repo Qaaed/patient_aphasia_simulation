@@ -1,0 +1,6 @@
+cd frontend
+npm install
+npm run dev
+
+cd backend (3.14 python)
+pip install langchain-groq langchain-core python-dotenv
