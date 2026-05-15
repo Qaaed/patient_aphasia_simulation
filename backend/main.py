@@ -1,4 +1,5 @@
 import os
+import json
 from typing import List, Literal
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -64,6 +65,22 @@ class ChatResponse(BaseModel):
     response: str
     communication_tip: str
     clinical_note: str
+
+
+class SessionReportRequest(BaseModel):
+    patient_type: Literal["1", "2"]
+    scenario: str = Field(..., min_length=1, max_length=60)
+    history: List[HistoryMessage] = Field(..., min_length=2, max_length=40)
+
+
+class SessionReportResponse(BaseModel):
+    score: int = Field(..., ge=0, le=100)
+    summary: str
+    strengths: List[str]
+    improvement_areas: List[str]
+    missed_opportunities: List[str]
+    recommended_next_steps: List[str]
+    clinical_feedback: str
 
 
 def get_patient_prompt(patient_type: str):
@@ -136,6 +153,47 @@ def parse_feedback(content: str):
     return tip, note
 
 
+def patient_type_label(patient_type: str):
+    return "Broca's aphasia" if patient_type == "1" else "Wernicke's aphasia"
+
+
+def build_report_prompt(patient_type: str, scenario: str, history: List[HistoryMessage]):
+    transcript = "\n".join(
+        f"{msg.sender.title()}: {msg.text}" for msg in history
+    )
+    return (
+        "You are evaluating a healthcare learner's communication with a simulated aphasia patient. "
+        "Use a fair educational rubric: short questions, patience, confirmation of meaning, supportive tone, "
+        "appropriate yes/no prompts, and avoiding overcorrection. "
+        "Return only valid JSON with this exact shape:\n"
+        "{\n"
+        '  "score": number from 0 to 100,\n'
+        '  "summary": "one concise paragraph",\n'
+        '  "strengths": ["3 concise bullets"],\n'
+        '  "improvement_areas": ["3 concise bullets"],\n'
+        '  "missed_opportunities": ["2 concise bullets"],\n'
+        '  "recommended_next_steps": ["3 concise bullets"],\n'
+        '  "clinical_feedback": "one concise paragraph tied to the aphasia type"\n'
+        "}\n\n"
+        f"Patient type: {patient_type_label(patient_type)}\n"
+        f"Scenario: {scenario}\n"
+        f"Transcript:\n{transcript}"
+    )
+
+
+def parse_report(content: str):
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        start = content.find("{")
+        end = content.rfind("}")
+        if start == -1 or end == -1:
+            raise
+        data = json.loads(content[start:end + 1])
+
+    return SessionReportResponse(**data)
+
+
 #API Endpoint
 @app.get("/health")
 async def health_check():
@@ -193,6 +251,25 @@ async def chat_endpoint(request: ChatRequest):
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Patient simulator failed to respond.")
+
+
+@app.post("/session-report", response_model=SessionReportResponse)
+async def session_report_endpoint(request: SessionReportRequest):
+    try:
+        report_prompt = build_report_prompt(
+            request.patient_type,
+            request.scenario,
+            request.history,
+        )
+        report_response = invoke_model(
+            [{"role": "user", "content": report_prompt}],
+            temperature=0.2,
+        )
+        return parse_report(report_response)
+
+    except Exception as e:
+        print(f"Report Error: {e}")
+        raise HTTPException(status_code=500, detail="Session report could not be generated.")
 
 
 if __name__ == "__main__":

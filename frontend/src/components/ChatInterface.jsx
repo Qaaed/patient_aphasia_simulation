@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
-import { sendMessageToPatient } from "../services/api";
+import SessionReport from "./SessionReport";
+import { generateSessionReport, sendMessageToPatient } from "../services/api";
 import { PATIENT_TYPES, SCENARIOS } from "../data/simulatorOptions";
 
 export default function ChatInterface({ patientType, scenario, onReset }) {
@@ -16,6 +17,17 @@ export default function ChatInterface({ patientType, scenario, onReset }) {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [report, setReport] = useState(null);
+  const reportRef = useRef(null);
+
+  const hasLearnerMessages = messages.some((msg) => msg.sender === "user");
+
+  useEffect(() => {
+    if (report) {
+      reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [report]);
 
   const handleSendMessage = async (text) => {
     const newHistory = [...messages, { sender: "user", text }];
@@ -39,6 +51,17 @@ export default function ChatInterface({ patientType, scenario, onReset }) {
       },
     ]);
     setIsLoading(false);
+  };
+
+  const handleGenerateReport = async () => {
+    setIsGeneratingReport(true);
+    const sessionReport = await generateSessionReport(
+      patientType,
+      scenario,
+      messages.map(({ sender, text }) => ({ sender, text }))
+    );
+    setReport(sessionReport);
+    setIsGeneratingReport(false);
   };
 
   return (
@@ -72,7 +95,34 @@ export default function ChatInterface({ patientType, scenario, onReset }) {
         </p>
       </div>
 
-      <MessageList messages={messages} isLoading={isLoading} />
+      <div className="flex-1 overflow-y-auto">
+        <MessageList messages={messages} isLoading={isLoading} />
+        {report && (
+          <div ref={reportRef}>
+            <SessionReport
+              report={report}
+              patientName={patient.name}
+              scenarioName={scenarioDetails.name}
+            />
+          </div>
+        )}
+      </div>
+      <div className="border-t border-slate-200 bg-white px-4 py-3">
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p className="text-sm text-slate-600">
+            Generate a report after a few learner turns to evaluate
+            communication strategy.
+          </p>
+          <button
+            type="button"
+            onClick={handleGenerateReport}
+            disabled={!hasLearnerMessages || isLoading || isGeneratingReport}
+            className="rounded-lg border border-teal-700 px-4 py-2 text-sm font-bold text-teal-800 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
+          >
+            {isGeneratingReport ? "Generating Report..." : "Generate Report"}
+          </button>
+        </div>
+      </div>
       <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
     </div>
   );

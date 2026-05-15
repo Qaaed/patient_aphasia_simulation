@@ -8,7 +8,7 @@ export default function MessageList({ messages, isLoading }) {
   }, [messages, isLoading]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-50 px-4 py-5">
+    <div className="bg-slate-50 px-4 py-5">
       <div className="mx-auto max-w-5xl space-y-4">
         {messages.map((msg, index) => {
           const isUser = msg.sender === "user";

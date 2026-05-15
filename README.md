@@ -10,34 +10,35 @@ The app gives healthcare learners a guided conversation session:
 - choose a clinical scenario
 - chat with a simulated patient
 - receive a short communication tip and clinical note after each exchange
+- generate a post-session evaluation report with a score and recommendations
 
 This makes the project more than an AI chat demo: it behaves like a lightweight educational tool for communication training.
 
 ## Tech Stack
 
 - Frontend: React, Vite, Tailwind CSS
-- Backend: FastAPI, Pydantic, LangChain Groq
+- Backend: FastAPI, Pydantic, Groq SDK
 - Model: Groq-hosted Llama 3.3 70B
 
 ## Project Structure
 
 ```text
 patient_aphasia_simulation/
-├── backend/
-│   ├── main.py
-│   ├── requirements.txt
-│   ├── .env.example
-│   └── .env
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── data/
-│   │   ├── services/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── package.json
-│   └── vite.config.js
-└── README.md
+|-- backend/
+|   |-- main.py
+|   |-- requirements.txt
+|   |-- .env.example
+|   `-- .env
+|-- frontend/
+|   |-- src/
+|   |   |-- components/
+|   |   |-- data/
+|   |   |-- services/
+|   |   |-- App.jsx
+|   |   `-- main.jsx
+|   |-- package.json
+|   `-- vite.config.js
+`-- README.md
 ```
 
 ## Setup
@@ -98,6 +99,53 @@ Request:
   "history": [
     { "sender": "patient", "text": "Hello... I am ready." }
   ]
+}
+```
+
+### `POST /session-report`
+
+Generate a learner evaluation report from the session transcript.
+
+Request:
+
+```json
+{
+  "patient_type": "1",
+  "scenario": "hospital-intake",
+  "history": [
+    { "sender": "patient", "text": "Hello... I am ready." },
+    { "sender": "user", "text": "Can you tell me how you are feeling?" },
+    { "sender": "patient", "text": "Feel... tired. Head... hurt." }
+  ]
+}
+```
+
+Response:
+
+```json
+{
+  "score": 78,
+  "summary": "The learner used a supportive tone and asked a clear opening question.",
+  "strengths": [
+    "Used simple language",
+    "Focused on the patient's comfort",
+    "Avoided correcting the patient's speech"
+  ],
+  "improvement_areas": [
+    "Use more yes/no questions",
+    "Confirm meaning before changing topics",
+    "Give the patient more time to respond"
+  ],
+  "missed_opportunities": [
+    "Could have checked pain level with a closed question",
+    "Could have summarized the patient's message back"
+  ],
+  "recommended_next_steps": [
+    "Practice supported conversation prompts",
+    "Use one question at a time",
+    "Confirm understanding before moving forward"
+  ],
+  "clinical_feedback": "The exchange reflects the need for short, structured prompts when communicating with a patient with Broca's aphasia."
 }
 ```
 

@@ -27,3 +27,28 @@ export const sendMessageToPatient = async (
     };
   }
 };
+
+export const generateSessionReport = async (patientType, scenario, history) => {
+  try {
+    const response = await axios.post(`${API_URL}/session-report`, {
+      patient_type: patientType,
+      scenario,
+      history,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Report API Error:", error);
+    return {
+      score: 0,
+      summary: "The session report could not be generated.",
+      strengths: [],
+      improvement_areas: [
+        "Check that the backend is running and the Groq API key is valid.",
+      ],
+      missed_opportunities: [],
+      recommended_next_steps: ["Try generating the report again."],
+      clinical_feedback:
+        "No clinical feedback is available because the report request failed.",
+    };
+  }
+};
