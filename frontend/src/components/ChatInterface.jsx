@@ -2,53 +2,77 @@ import { useState } from "react";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import { sendMessageToPatient } from "../services/api";
+import { PATIENT_TYPES, SCENARIOS } from "../data/simulatorOptions";
 
-export default function ChatInterface({ patientType, onReset }) {
+export default function ChatInterface({ patientType, scenario, onReset }) {
+  const patient = PATIENT_TYPES.find((item) => item.id === patientType);
+  const scenarioDetails = SCENARIOS.find((item) => item.id === scenario);
   const [messages, setMessages] = useState([
-    { sender: "patient", text: "*looks at you waiting*" }, // Initial state
+    {
+      sender: "patient",
+      text: "Hello... I am ready.",
+      clinicalNote:
+        "Begin with one short prompt and give the patient time to respond.",
+    },
   ]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendMessage = async (text) => {
-    // 1. Add User Message immediately
     const newHistory = [...messages, { sender: "user", text }];
     setMessages(newHistory);
     setIsLoading(true);
 
-    // 2. Call Backend
-    // We send only the text history for context if your backend needs it
-    const historyText = newHistory.map((m) => m.text);
-    const responseText = await sendMessageToPatient(
+    const response = await sendMessageToPatient(
       text,
       patientType,
-      historyText
+      scenario,
+      newHistory.map(({ sender, text }) => ({ sender, text }))
     );
 
-    // 3. Add AI Response
-    setMessages((prev) => [...prev, { sender: "patient", text: responseText }]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        sender: "patient",
+        text: response.response,
+        communicationTip: response.communication_tip,
+        clinicalNote: response.clinical_note,
+      },
+    ]);
     setIsLoading(false);
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
-      {/* Top Bar for Chat */}
-      <div className="bg-white border-b p-4 flex justify-between items-center shadow-sm">
-        <span className="font-bold text-slate-700">
-          Current Session:{" "}
-          {patientType === "1" ? "Broca's Aphasia" : "Wernicke's Aphasia"}
-        </span>
-        <button
-          onClick={onReset}
-          className="text-red-500 hover:text-red-700 text-sm font-semibold hover:underline"
-        >
-          End Simulation
-        </button>
+    <div className="flex h-full flex-col bg-slate-50">
+      <div className="border-b border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              Current session
+            </p>
+            <h2 className="mt-1 text-lg font-bold text-slate-950">
+              {patient.name} / {scenarioDetails.name}
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              {scenarioDetails.goal}
+            </p>
+          </div>
+          <button
+            onClick={onReset}
+            className="self-start rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-red-300 hover:text-red-700 md:self-center"
+          >
+            End Simulation
+          </button>
+        </div>
       </div>
 
-      {/* Messages Area */}
-      <MessageList messages={messages} isLoading={isLoading} />
+      <div className="border-b border-teal-100 bg-teal-50 px-5 py-3">
+        <p className="mx-auto max-w-5xl text-sm leading-6 text-teal-950">
+          Learner focus: use short questions, confirm meaning, and avoid
+          correcting every language error.
+        </p>
+      </div>
 
-      {/* Input Area */}
+      <MessageList messages={messages} isLoading={isLoading} />
       <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
     </div>
   );

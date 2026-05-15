@@ -1,226 +1,133 @@
 # Aphasia Patient Simulator
 
-An interactive educational tool that simulates conversations with patients experiencing Broca's and Wernicke's aphasia.
+An interactive clinical training simulator for practicing communication with patients who have Broca's or Wernicke's aphasia.
 
-## Overview
+## What It Does
 
-This application allows healthcare students, professionals, and aphasia patients to practice and develop communication skills. The simulator uses AI to generate realistic speech patterns characteristic of different aphasia types, providing immediate, realistic feedback that helps users understand and adapt to various communication challenges.
+The app gives healthcare learners a guided conversation session:
 
-### Why This Matters
+- choose an aphasia profile
+- choose a clinical scenario
+- chat with a simulated patient
+- receive a short communication tip and clinical note after each exchange
 
-Aphasia affects millions of people worldwide, often resulting from stroke, brain injury, or neurological conditions. Traditional therapy requires access to trained specialists and repeated practice sessions. This simulator enables:
-
-- **Self-directed practice** for patients between therapy sessions
-- **Training environment** for healthcare professionals
-- **Safe experimentation** with communication strategies
-- **Scalable access** to aphasia conversation practice
-
-## Features
-
-- **Two Aphasia Types**: Broca's (telegraphic speech) and Wernicke's (fluent but nonsensical)
-- **Real-time Conversation**: Interactive chat interface with instant responses
-- **Educational Focus**: Learn how aphasia affects communication
-- **Web-based Interface**: Easy-to-use React frontend with Tailwind CSS styling
-- **Robot-Ready**: Designed to integrate with therapeutic robots for patient care
-
-## Use Cases
-
-- **Patient Therapy**: Extended practice between therapy sessions
-- **Caregiver Training**: Help family members understand communication challenges
-- **Professional Education**: Train speech-language pathologists and healthcare students
-- **Robot Integration**: AI backbone for aphasia therapy robots
-- **Research**: Study communication patterns and recovery strategies
+This makes the project more than an AI chat demo: it behaves like a lightweight educational tool for communication training.
 
 ## Tech Stack
 
-- **Frontend**: React 19, Vite, Tailwind CSS
-- **Backend**: FastAPI, Python 3.14+
-- **AI Model**: Groq (Llama 3.3-70B)
+- Frontend: React, Vite, Tailwind CSS
+- Backend: FastAPI, Pydantic, LangChain Groq
+- Model: Groq-hosted Llama 3.3 70B
 
-## Prerequisites
+## Project Structure
 
-- Python 3.14+
-- Node.js & npm
-- GROQ API Key ([Get one free here](https://console.groq.com))
+```text
+patient_aphasia_simulation/
+├── backend/
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── .env.example
+│   └── .env
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── data/
+│   │   ├── services/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
+└── README.md
+```
 
 ## Setup
 
-### 1. Clone and Navigate
-
-```bash
-cd patient_aphasia_simulation
-```
-
-### 2. Backend Setup
+### Backend
 
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
-Create `.env` file in `backend/` with your API key (no spaces around `=`):
+Create `backend/.env` from the example:
 
-```
-GROQ_API_KEY=your_api_key_here
+```env
+GROQ_API_KEY=your_groq_api_key_here
+FRONTEND_ORIGIN=http://localhost:5173
 ```
 
-### 3. Frontend Setup
+Run the API:
 
 ```bash
-cd ../frontend
-npm install
-```
-
-## Running the Application
-
-You need **2 terminals open simultaneously**:
-
-**Terminal 1 - Backend Server:**
-
-```bash
-cd backend
 uvicorn main:app --reload
 ```
 
-Runs on: `http://localhost:8000`
+Backend URL: `http://localhost:8000`
 
-**Terminal 2 - Frontend Server:**
+### Frontend
 
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
 
-Runs on: `http://localhost:5173`
+Frontend URL: `http://localhost:5173`
 
-The frontend will open automatically in your browser. You can now start chatting with the simulated patient.
+Optional frontend environment override:
 
-## Project Structure
-
-```
-patient_aphasia_simulation/
-├── backend/
-│   ├── main.py              # FastAPI server & LLM integration
-│   ├── requirements.txt      # Python dependencies
-│   └── .env                 # API keys (create this file)
-├── frontend/
-│   ├── src/
-│   │   ├── components/      # React components
-│   │   │   ├── ChatInterface.jsx
-│   │   │   ├── MessageList.jsx
-│   │   │   ├── MessageInput.jsx
-│   │   │   ├── Header.jsx
-│   │   │   └── PatientSelector.jsx
-│   │   ├── services/
-│   │   │   └── api.js       # Axios API client
-│   │   ├── App.jsx          # Main app component
-│   │   └── index.css
-│   ├── package.json
-│   └── vite.config.js
-├── README.md                # This file
-└── requirements.txt         # Python dependencies (root)
+```env
+VITE_API_URL=http://127.0.0.1:8000
 ```
 
-## How It Works
+## API
 
-1. **User sends a message** in the chat interface
-2. **Frontend sends request** to FastAPI backend via axios
-3. **Backend constructs a prompt** based on the selected aphasia type:
-   - **Broca's Aphasia**: Telegraphic speech (nouns/verbs only, halting)
-   - **Wernicke's Aphasia**: Fluent but nonsensical (word salad, neologisms)
-4. **Groq API generates response** using Llama 3.3-70B model
-5. **Response displayed** in real-time chat
+### `GET /health`
 
-## Aphasia Types Simulated
+Returns basic backend status.
 
-### Broca's Aphasia
+### `POST /chat`
 
-- Slow, effortful speech
-- Telegraphic (only essential words)
-- Omits function words (the, is, and)
-- Frustrated tone when searching for words
-- Example: "Want... store... go."
-
-### Wernicke's Aphasia
-
-- Fluent, confident, normal speed
-- Grammatically correct but meaningless
-- Made-up words (neologisms)
-- Patient unaware of errors
-- Example: "The glimber is waving at the sky melon today."
-
-## Troubleshooting
-
-**"Error: Could not connect to the patient simulator"**
-
-- Ensure backend is running on port 8000
-- Check `.env` file is in `backend/` folder with correct API key
-- Verify no spaces around `=` in `.env`
-
-**Backend crashes on startup**
-
-- Verify GROQ_API_KEY is valid
-- Check all dependencies installed: `pip install -r requirements.txt`
-- Try deleting and recreating the `.env` file
-
-**Frontend won't load**
-
-- Ensure you're in the `frontend/` folder
-- Run `npm install` if not already done
-- Check that port 5173 is available
-
-**No response from simulated patient**
-
-- Verify GROQ API key is valid and has credits
-- Check backend terminal for error messages
-- Try restarting both servers
-
-## API Endpoints
-
-### POST /chat
-
-Send a message to the patient simulator
-
-**Request:**
+Request:
 
 ```json
 {
-  "user_message": "How are you feeling today?",
+  "user_message": "Can you tell me how you are feeling?",
   "patient_type": "1",
-  "history": ["Hello", "Hi there"]
+  "scenario": "hospital-intake",
+  "history": [
+    { "sender": "patient", "text": "Hello... I am ready." }
+  ]
 }
 ```
 
-**Response:**
+Response:
 
 ```json
 {
-  "response": "Feel... okay. Thanks... ask."
+  "response": "Feel... tired. Head... hurt.",
+  "communication_tip": "Use short yes/no follow-up questions and give the patient time to answer.",
+  "clinical_note": "This exchange demonstrates effortful, telegraphic speech associated with Broca's aphasia."
 }
 ```
 
-**Parameters:**
+## Development Checks
 
-- `user_message` (string): The message to send
-- `patient_type` (string): "1" for Broca's, "2" for Wernicke's
-- `history` (array): Previous messages for context
+Frontend:
 
-## Development
+```bash
+cd frontend
+npm run lint
+npm run build
+```
 
-### Frontend Development
+Backend:
 
-- Edit components in `frontend/src/components/`
-- Tailwind CSS is configured for styling
-- Hot reload enabled with Vite
+```bash
+cd backend
+python -m py_compile main.py
+```
 
-### Backend Development
+## Notes
 
-- Edit `backend/main.py` for API changes
-- Auto-reload enabled with `--reload` flag
-- CORS enabled for React frontend
-
-## Project & Authors
-
-Developed as part of the **AQTASY Robotics** aphasia therapy robot initiative. This simulator provides the conversational AI backbone for therapeutic robots designed to improve patient outcomes in aphasia rehabilitation.
-
-For more information about the broader project and robot development, visit: [aqtasyrobotics.com](https://aqtasyrobotics.com/)
+This simulator is for education and prototyping. It should not be used as a diagnostic tool or as a replacement for care from a qualified speech-language pathologist or clinician.

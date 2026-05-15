@@ -5,19 +5,20 @@ import PatientSelector from "./components/PatientSelector";
 import ChatInterface from "./components/ChatInterface";
 
 function App() {
-  const [patientType, setPatientType] = useState(null); // null = show menu, "1" or "2" = show chat
+  const [session, setSession] = useState(null);
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100 font-sans">
+    <div className="h-screen flex flex-col bg-slate-100 font-sans text-slate-900">
       <Header />
 
       <main className="flex-1 overflow-hidden relative">
-        {!patientType ? (
-          <PatientSelector onSelect={setPatientType} />
+        {!session ? (
+          <PatientSelector onStartSession={setSession} />
         ) : (
           <ChatInterface
-            patientType={patientType}
-            onReset={() => setPatientType(null)}
+            patientType={session.patientType}
+            scenario={session.scenario}
+            onReset={() => setSession(null)}
           />
         )}
       </main>

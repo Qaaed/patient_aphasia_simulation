@@ -14,21 +14,21 @@ export default function MessageInput({ onSendMessage, disabled }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-4 bg-white border-t border-gray-200 shadow-sm"
+      className="border-t border-slate-200 bg-white p-4 shadow-sm"
     >
-      <div className="flex gap-2 container mx-auto max-w-4xl">
+      <div className="container mx-auto flex max-w-5xl gap-3">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={disabled}
-          placeholder="Type your message to the patient..."
-          className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+          placeholder="Ask one short, supportive question..."
+          className="min-w-0 flex-1 rounded-lg border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-slate-100"
         />
         <button
           type="submit"
           disabled={disabled || !input.trim()}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="rounded-lg bg-teal-700 px-5 py-3 font-semibold text-white transition-colors hover:bg-slate-950 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           Send
         </button>
