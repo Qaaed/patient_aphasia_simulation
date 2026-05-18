@@ -42,12 +42,16 @@ This is an educational prototype, not a diagnostic or treatment tool.
 
 ```text
 patient_aphasia_simulation/
+|-- docker-compose.yml
+|-- .dockerignore
 |-- backend/
+|   |-- Dockerfile
 |   |-- main.py
 |   |-- requirements.txt
 |   |-- .env.example
 |   `-- .env
 |-- frontend/
+|   |-- Dockerfile
 |   |-- src/
 |   |   |-- components/
 |   |   |-- data/
@@ -61,7 +65,54 @@ patient_aphasia_simulation/
 
 ## Setup
 
-### 1. Backend
+### Option A: Run With Docker
+
+Docker is the easiest way to run the full app because it starts the React frontend and FastAPI backend together.
+
+Create `backend/.env`:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+FRONTEND_ORIGIN=http://localhost:5173
+```
+
+Start both services:
+
+```bash
+docker compose up --build
+```
+
+Open the app:
+
+```text
+Frontend: http://localhost:5173
+Backend: http://localhost:8000
+Health check: http://localhost:8000/health
+```
+
+Stop the app:
+
+```bash
+docker compose down
+```
+
+Run in the background:
+
+```bash
+docker compose up -d --build
+```
+
+View logs:
+
+```bash
+docker compose logs
+```
+
+Do not commit `backend/.env`; it contains your Groq API key.
+
+### Option B: Run Without Docker
+
+#### 1. Backend
 
 ```bash
 cd backend
@@ -93,7 +144,7 @@ Health check:
 http://127.0.0.1:8000/health
 ```
 
-### 2. Frontend
+#### 2. Frontend
 
 ```bash
 cd frontend
